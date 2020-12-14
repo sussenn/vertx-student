@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/asyncmvc/asyncmvc.iml" filepath="$PROJECT_DIR$/asyncmvc/asyncmvc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/student.iml" filepath="$PROJECT_DIR$/.idea/student.iml" />
+      <module fileurl="file://$PROJECT_DIR$/vertx_asyncdemo/vertx_asyncdemo.iml" filepath="$PROJECT_DIR$/vertx_asyncdemo/vertx_asyncdemo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/vertx_demo/vertx_demo.iml" filepath="$PROJECT_DIR$/vertx_demo/vertx_demo.iml" />
+    </modules>
+  </component>
+</project>
