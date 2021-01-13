@@ -5,16 +5,16 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.itc</groupId>
-    <artifactId>vertx_asyncdemo</artifactId>
+    <artifactId>mvc_demo</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
         <vertx.version>4.0.0</vertx.version>
-        <main.class>com.itc.async.Main</main.class>
         <!--指定启动器-->
+        <main.class>com.itc.mvc.Main</main.class>
         <!--<main.class>io.vertx.core.Launcher</main.class>-->
         <!--声明程序入口-->
-        <main.verticle>com.itc.async.MainVerticle</main.verticle>
+        <main.verticle>com.itc.mvc.MainVerticle</main.verticle>
     </properties>
 
     <dependencies>
@@ -36,12 +36,6 @@
             <artifactId>vertx-web</artifactId>
             <version>${vertx.version}</version>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>io.vertx</groupId>-->
-<!--            <artifactId>vertx-web-client</artifactId>-->
-<!--            <version>${vertx.version}</version>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>io.vertx</groupId>
