@@ -19,6 +19,7 @@ import io.vertx.ext.web.handler.BodyHandler;
  */
 public class HttpVerticle extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger(HttpVerticle.class);
+    public static String ADDRESS_WEB = "add_http";
 
     @Override
     public void start(Promise<Void> promise) {
@@ -26,7 +27,8 @@ public class HttpVerticle extends AbstractVerticle {
 
         Router router = Router.router(vertx);
         router.route().handler(BodyHandler.create());
-        router.get("/db/cof/get/:id").handler(this::findById);
+        router.get("/db/findById/:id").handler(this::findById);
+        router.get("/db/findAll").handler(this::findAll);
 
         server.requestHandler(router).listen(8083, ar -> {
             if (ar.succeeded()) {
@@ -41,17 +43,35 @@ public class HttpVerticle extends AbstractVerticle {
 
     private void findById(RoutingContext context) {
         String id = context.request().getParam("id");
-
         // 给add_http发送消息
-        DeliveryOptions options = new DeliveryOptions();
-        vertx.eventBus().request("add_http", id, options, reply -> {
+        DeliveryOptions options = new DeliveryOptions().addHeader("action", "getOne");
+        vertx.eventBus().request(ADDRESS_WEB, id, options, reply -> {
             if (reply.succeeded()) {
-                context.response().end(new JsonObject()
-                        .put("code", 200)
-                        .put("msg", "查询成功")
-                        .put("data", reply.result().body()).encode(), "utf-16");
+                context.response().putHeader("content-type", "application/json")
+                        .putHeader("charset", "utf-8")
+                        .end(new JsonObject()
+                                .put("code", 200)
+                                .put("msg", "查询成功")
+                                .put("data", reply.result().body()).encode());
             } else {
                 logger.error("findById() 查询用户信息异常. err: ", reply.cause());
+                context.fail(reply.cause());
+            }
+        });
+    }
+
+    private void findAll(RoutingContext context) {
+        DeliveryOptions options = new DeliveryOptions().addHeader("action", "getList");
+        vertx.eventBus().request(ADDRESS_WEB, new JsonObject(), options, reply -> {
+            if (reply.succeeded()) {
+                context.response().putHeader("content-type", "application/json")
+                        .putHeader("charset", "utf-8")
+                        .end(new JsonObject()
+                                .put("code", 200)
+                                .put("msg", "查询所有数据成功")
+                                .put("data", reply.result().body()).encode());
+            } else {
+                logger.error("findAll() 查询所有用户信息异常. err: ", reply.cause());
                 context.fail(reply.cause());
             }
         });

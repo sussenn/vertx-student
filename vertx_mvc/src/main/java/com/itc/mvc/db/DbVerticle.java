@@ -1,5 +1,6 @@
 package com.itc.mvc.db;
 
+import com.itc.mvc.web.HttpVerticle;
 import io.vertx.config.ConfigRetriever;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -7,10 +8,14 @@ import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @ClassName DbVerticle
@@ -43,7 +48,7 @@ public class DbVerticle extends AbstractVerticle {
                 client = MySQLPool.pool(vertx, connectOptions, poolOptions);
 
                 // 监听生产者发送的消息并调用 onMessage()处理
-                vertx.eventBus().consumer("add_http", this::onMessage);
+                vertx.eventBus().consumer(HttpVerticle.ADDRESS_WEB, this::onMessage);
                 // 异步获取响应结果
                 promise.complete();
             } else {
@@ -54,8 +59,22 @@ public class DbVerticle extends AbstractVerticle {
     }
 
     private void onMessage(Message<String> message) {
+        String action = message.headers().get("action");
+        switch (action) {
+            case "getOne":
+                getOne(message);
+                break;
+            case "getList":
+                getList(message);
+                break;
+            default:
+                message.fail(5002, "未知参数. action: " + action);
+        }
+    }
+
+    private void getOne(Message<String> message) {
         // 获取MySQL连接    // 执行查询sql
-        getConn().compose(conn -> getRows(conn, message.body()).onComplete(rows -> {
+        getConn().compose(conn -> findById(conn, message.body()).onComplete(rows -> {
             if (rows.succeeded()) {
                 JsonObject userJson = new JsonObject();
                 rows.result().forEach(row -> userJson.put("id", row.getInteger("id"))
@@ -69,6 +88,26 @@ public class DbVerticle extends AbstractVerticle {
             }
         }));
     }
+
+    private void getList(Message<String> message) {
+        getConn().compose(conn -> findAll(conn).onComplete(rows -> {
+            if (rows.succeeded()) {
+                List<JsonObject> userList = new ArrayList<>();
+                rows.result().forEach(user -> {
+                    JsonObject userJson = new JsonObject();
+                    userJson.put("id", user.getInteger("id"));
+                    userJson.put("name", user.getValue("name"));
+                    userJson.put("age", user.getInteger("age"));
+                    userList.add(userJson);
+                });
+                message.reply(new JsonArray(userList));
+            } else {
+                logger.error("数据库查询信息处理失败. err: ", rows.cause());
+                message.fail(5001, "数据处理失败");
+            }
+        }));
+    }
+
 
     // config 的异步读取
     private Future<JsonObject> getJsonConf(ConfigRetriever confRet) {
@@ -102,7 +141,7 @@ public class DbVerticle extends AbstractVerticle {
     }
 
     // mysql查询 的异步执行
-    private Future<RowSet<Row>> getRows(SqlConnection conn, String id) {
+    private Future<RowSet<Row>> findById(SqlConnection conn, String id) {
         Promise<RowSet<Row>> promise = Promise.promise();
         conn.preparedQuery("select id,name,age from user where id = ?")
                 .execute(Tuple.of(id), ar2 -> {
@@ -112,6 +151,22 @@ public class DbVerticle extends AbstractVerticle {
                     } else {
                         logger.error("mysql执行异常. err:", ar2.cause());
                         promise.fail(ar2.cause());
+                    }
+                    conn.close();
+                });
+        return promise.future();
+    }
+
+    private Future<RowSet<Row>> findAll(SqlConnection conn) {
+        Promise<RowSet<Row>> promise = Promise.promise();
+        conn.query("select id,name,age from user")
+                .execute(ar3 -> {
+                    if (ar3.succeeded()) {
+                        RowSet<Row> rows = ar3.result();
+                        promise.complete(rows);
+                    } else {
+                        logger.error("mysql执行异常. err:", ar3.cause());
+                        promise.fail(ar3.cause());
                     }
                     conn.close();
                 });
