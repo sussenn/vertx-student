@@ -5,14 +5,18 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.itc</groupId>
-    <artifactId>mvc_demo</artifactId>
+    <artifactId>vertx_mvc</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <description>vertX MVC结构化案例</description>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+
         <vertx.version>4.0.0</vertx.version>
         <!--指定启动器-->
-        <main.class>com.itc.mvc.Main</main.class>
-        <!--<main.class>io.vertx.core.Launcher</main.class>-->
+        <main.class>io.vertx.core.Launcher</main.class>
         <!--声明程序入口-->
         <main.verticle>com.itc.mvc.main.MainVerticle</main.verticle>
     </properties>
@@ -36,7 +40,6 @@
             <artifactId>vertx-web</artifactId>
             <version>${vertx.version}</version>
         </dependency>
-
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-mysql-client</artifactId>
@@ -83,7 +86,7 @@
                                 </transformer>
                             </transformers>
                             <artifactSet/>
-                            <outputFile>${project.build.directory}/${project.artifactId}-${project.version}-prod.jar
+                            <outputFile>${project.build.directory}/${project.artifactId}-${project.version}-run.jar
                             </outputFile>
                         </configuration>
                     </execution>
@@ -91,5 +94,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
