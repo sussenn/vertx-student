@@ -30,10 +30,10 @@ public class HttpVerticle extends AbstractVerticle {
 
         server.requestHandler(router).listen(8083, ar -> {
             if (ar.succeeded()) {
-                logger.info("HTTP服务启动成功,port: [8083]");
+                logger.info("HTTP server running on port: [8083]");
                 promise.complete();
             } else {
-                logger.error("HTTP服务启动失败,err: ", ar.cause());
+                logger.error("HTTP server not start,err: ", ar.cause());
                 promise.fail(ar.cause());
             }
         });
