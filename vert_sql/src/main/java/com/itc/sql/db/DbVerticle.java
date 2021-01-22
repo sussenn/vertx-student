@@ -100,8 +100,12 @@ public class DbVerticle extends AbstractVerticle {
                 .execute(null)
                 .onSuccess(res -> {
                     List<JsonObject> userList = new ArrayList<>();
-                    res.forEach(userList::add);
-                    message.reply(new JsonArray(userList));
+                    if (!res.iterator().hasNext()) {
+                        message.reply("暂无数据");
+                    } else {
+                        res.forEach(userList::add);
+                        message.reply(new JsonArray(userList));
+                    }
                 })
                 .onFailure(err -> message.fail(5001, "数据处理失败. err: " + err.getMessage()));
 
