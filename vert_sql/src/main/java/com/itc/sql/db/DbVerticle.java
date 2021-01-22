@@ -14,6 +14,7 @@ import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.templates.SqlTemplate;
 import io.vertx.sqlclient.templates.TupleMapper;
 
@@ -79,18 +80,27 @@ public class DbVerticle extends AbstractVerticle {
 
     private void getOne(Message<JsonObject> message) {
         SqlTemplate.forQuery(pool, "select id,name,age from user where id = #{id}")
+                // 接收的结果映射为json类型
                 .mapTo(Row::toJson)
+                // 传参
                 .execute(message.body().getMap())
-                .onSuccess(res -> message.reply(res.iterator().next()))
+                .onSuccess(res -> {
+                    if (!res.iterator().hasNext()) {
+                        message.reply("暂无数据");
+                    } else {
+                        message.reply(res.iterator().next());
+                    }
+                })
                 .onFailure(err -> message.fail(5001, "数据处理失败. err: " + err.getMessage()));
     }
 
     private void getList(Message<JsonObject> message) {
         SqlTemplate.forQuery(pool, "select id, name, age from user")
+                .mapTo(Row::toJson)
                 .execute(null)
                 .onSuccess(res -> {
                     List<JsonObject> userList = new ArrayList<>();
-                    res.forEach(row -> userList.add(row.toJson()));
+                    res.forEach(userList::add);
                     message.reply(new JsonArray(userList));
                 })
                 .onFailure(err -> message.fail(5001, "数据处理失败. err: " + err.getMessage()));
