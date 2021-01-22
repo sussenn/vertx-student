@@ -1,4 +1,4 @@
-package com.itc.mvc.web;
+package com.itc.sql.web;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
@@ -6,6 +6,7 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -29,10 +30,11 @@ public class HttpVerticle extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
         router.get("/db/findById/:id").handler(this::findById);
         router.get("/db/findAll").handler(this::findAll);
+        router.post("/db/add").handler(this::add);
 
-        server.requestHandler(router).listen(8083, ar -> {
+        server.requestHandler(router).listen(8084, ar -> {
             if (ar.succeeded()) {
-                logger.info("HTTP server running on port: [8083]");
+                logger.info("HTTP server running on port: [8084]");
                 promise.complete();
             } else {
                 logger.error("HTTP server not start,err: ", ar.cause());
@@ -62,7 +64,7 @@ public class HttpVerticle extends AbstractVerticle {
 
     private void findAll(RoutingContext context) {
         DeliveryOptions options = new DeliveryOptions().addHeader("action", "getList");
-        vertx.eventBus().request(ADDRESS_WEB, new JsonObject(), options, reply -> {
+        vertx.eventBus().request(ADDRESS_WEB, null, options, reply -> {
             if (reply.succeeded()) {
                 context.response().putHeader("content-type", "application/json")
                         .putHeader("charset", "utf-8")
@@ -72,6 +74,24 @@ public class HttpVerticle extends AbstractVerticle {
                                 .put("data", reply.result().body()).encode());
             } else {
                 logger.error("findAll() 查询所有用户信息异常. err: ", reply.cause());
+                context.fail(reply.cause());
+            }
+        });
+    }
+
+    private void add(RoutingContext context) {
+        JsonObject data = context.getBodyAsJson();
+        DeliveryOptions options = new DeliveryOptions().addHeader("action", "insert");
+        vertx.eventBus().request(ADDRESS_WEB, data, options, reply -> {
+            if (reply.succeeded()) {
+                context.response().putHeader("content-type", "application/json")
+                        .putHeader("charset", "utf-8")
+                        .end(new JsonObject()
+                                .put("code", 200)
+                                .put("msg", "新增成功")
+                                .put("data", reply.result().body()).encode());
+            } else {
+                logger.error("add() 新增用户信息异常. err: ", reply.cause());
                 context.fail(reply.cause());
             }
         });

@@ -58,7 +58,7 @@ public class DbVerticle extends AbstractVerticle {
         });
     }
 
-    private void onMessage(Message<String> message) {
+    private void onMessage(Message<JsonObject> message) {
         String action = message.headers().get("action");
         switch (action) {
             case "getOne":
@@ -72,9 +72,9 @@ public class DbVerticle extends AbstractVerticle {
         }
     }
 
-    private void getOne(Message<String> message) {
+    private void getOne(Message<JsonObject> message) {
         // 获取MySQL连接    // 执行查询sql
-        getConn().compose(conn -> findById(conn, message.body()).onComplete(rows -> {
+        getConn().compose(conn -> findById(conn, message.body().getString("id")).onComplete(rows -> {
             if (rows.succeeded()) {
                 JsonObject userJson = new JsonObject();
                 rows.result().forEach(row -> userJson.put("id", row.getInteger("id"))
@@ -83,13 +83,13 @@ public class DbVerticle extends AbstractVerticle {
                 // 查询结果的封装
                 message.reply(userJson);
             } else {
-                logger.error("数据库查询信息处理失败. err: ", rows.cause());
+                logger.error("getOne() 数据库查询信息处理失败. err: ", rows.cause());
                 message.fail(5001, "数据处理失败");
             }
         }));
     }
 
-    private void getList(Message<String> message) {
+    private void getList(Message<JsonObject> message) {
         getConn().compose(conn -> findAll(conn).onComplete(rows -> {
             if (rows.succeeded()) {
                 List<JsonObject> userList = new ArrayList<>();
@@ -143,6 +143,7 @@ public class DbVerticle extends AbstractVerticle {
     // mysql查询 的异步执行
     private Future<RowSet<Row>> findById(SqlConnection conn, String id) {
         Promise<RowSet<Row>> promise = Promise.promise();
+        // 预编译查询
         conn.preparedQuery("select id,name,age from user where id = ?")
                 .execute(Tuple.of(id), ar2 -> {
                     if (ar2.succeeded()) {
