@@ -30,23 +30,22 @@ import java.util.List;
 public class DbVerticle extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger(DbVerticle.class);
 
-    MySQLConnectOptions connectOptions;
-    PoolOptions poolOptions = new PoolOptions().setMaxSize(10); //连接数 默认10
-    MySQLPool pool;
+    private MySQLPool pool;
 
     @Override
     public void start(Promise<Void> promise) {
         ConfigRetriever confRet = ConfigRetriever.create(vertx);
-        // 读取json配置文件信息
+        // 异步读取json配置文件信息
         getJsonConf(confRet).onComplete(confJson -> {
             if (confJson.succeeded()) {
-                // SQL连接参数配置
-                connectOptions = new MySQLConnectOptions()
+                // MYSQL连接参数配置
+                MySQLConnectOptions connectOptions = new MySQLConnectOptions()
                         .setPort(confJson.result().getInteger("port"))
                         .setHost(confJson.result().getString("host"))
                         .setDatabase(confJson.result().getString("database"))
                         .setUser(confJson.result().getString("user"))
                         .setPassword(confJson.result().getString("password"));
+                PoolOptions poolOptions = new PoolOptions().setMaxSize(10); //连接数 默认10
                 // 连接池初始化
                 pool = MySQLPool.pool(vertx, connectOptions, poolOptions);
 
@@ -78,22 +77,6 @@ public class DbVerticle extends AbstractVerticle {
         }
     }
 
-    private void getOne(Message<JsonObject> message) {
-        SqlTemplate.forQuery(pool, "select id,name,age from user where id = #{id}")
-                // 接收的结果映射为json类型
-                .mapTo(Row::toJson)
-                // 传参
-                .execute(message.body().getMap())
-                .onSuccess(res -> {
-                    if (!res.iterator().hasNext()) {
-                        message.reply("暂无数据");
-                    } else {
-                        message.reply(res.iterator().next());
-                    }
-                })
-                .onFailure(err -> message.fail(5001, "数据处理失败. err: " + err.getMessage()));
-    }
-
     private void getList(Message<JsonObject> message) {
         SqlTemplate.forQuery(pool, "select id, name, age from user")
                 .mapTo(Row::toJson)
@@ -108,7 +91,22 @@ public class DbVerticle extends AbstractVerticle {
                     }
                 })
                 .onFailure(err -> message.fail(5001, "数据处理失败. err: " + err.getMessage()));
+    }
 
+    private void getOne(Message<JsonObject> message) {
+        SqlTemplate.forQuery(pool, "select id,name,age from user where id = #{id}")
+                // 接收的结果映射为json类型
+                .mapTo(Row::toJson)
+                // 传参
+                .execute(message.body().getMap())
+                .onSuccess(res -> {
+                    if (!res.iterator().hasNext()) {
+                        message.reply("暂无数据");
+                    } else {
+                        message.reply(res.iterator().next());
+                    }
+                })
+                .onFailure(err -> message.fail(5001, "数据处理失败. err: " + err.getMessage()));
     }
 
     private void insert(Message<JsonObject> message) {
