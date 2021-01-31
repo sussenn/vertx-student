@@ -13,10 +13,10 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
 
 /**
- * @ClassName HttpVerticle
- * @Author sussenn
- * @Version 1.0.0
- * @Date 2021/1/14
+ * <p>@ClassName HttpVerticle
+ * <p>@Author sussenn
+ * <p>@Version 1.0.0
+ * <p>@Date 2021/1/14
  */
 public class HttpVerticle extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger(HttpVerticle.class);
