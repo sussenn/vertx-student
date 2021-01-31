@@ -14,7 +14,6 @@ import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.templates.SqlTemplate;
 import io.vertx.sqlclient.templates.TupleMapper;
 
@@ -22,10 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @ClassName DbVerticle
- * @Author sussenn
- * @Version 1.0.0
- * @Date 2021/1/14
+ * <p>@ClassName DbVerticle
+ * <p>@Author sussenn
+ * <p>@Version 1.0.0
+ * <p>@Date 2021/1/14
  */
 public class DbVerticle extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger(DbVerticle.class);
