@@ -4,12 +4,12 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -19,7 +19,7 @@ import io.vertx.ext.web.handler.BodyHandler;
  * @Date 2022/7/22
  */
 public class HttpVerticle extends AbstractVerticle {
-    private static final Logger logger = LoggerFactory.getLogger(HttpVerticle.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HttpVerticle.class);
 
     public static String ADDRESS_WEB = "adder_http";
 
@@ -36,10 +36,10 @@ public class HttpVerticle extends AbstractVerticle {
 
         server.requestHandler(router).listen(8722, ar -> {
             if (ar.succeeded()) {
-                logger.info("HTTP server running on port: [8722]");
+                LOGGER.info("HTTP server running on port: [8722]");
                 startPromise.complete();
             } else {
-                logger.error("HTTP server not start,err: ", ar.cause());
+                LOGGER.error("HTTP server not start,err: ", ar.cause());
                 startPromise.fail(ar.cause());
             }
         });
@@ -63,7 +63,7 @@ public class HttpVerticle extends AbstractVerticle {
                                 .put("msg", "分页查询数据成功")
                                 .put("data", reply.result().body()).encode());
             } else {
-                logger.error("findPage() 分页查询数据异常. err: ", reply.cause());
+                LOGGER.error("findPage() 分页查询数据异常. err: ", reply.cause());
                 context.fail(reply.cause());
             }
         });
@@ -82,7 +82,7 @@ public class HttpVerticle extends AbstractVerticle {
                                 .put("msg", "查询成功")
                                 .put("data", reply.result().body()).encode());
             } else {
-                logger.error("findById() 查询用户信息异常. err: ", reply.cause());
+                LOGGER.error("findById() 查询用户信息异常. err: ", reply.cause());
                 context.fail(reply.cause());
             }
         });
@@ -99,7 +99,7 @@ public class HttpVerticle extends AbstractVerticle {
                                 .put("msg", "查询所有数据成功")
                                 .put("data", reply.result().body()).encode());
             } else {
-                logger.error("findAll() 查询所有用户信息异常. err: ", reply.cause());
+                LOGGER.error("findAll() 查询所有用户信息异常. err: ", reply.cause());
                 context.fail(reply.cause());
             }
         });
@@ -117,7 +117,7 @@ public class HttpVerticle extends AbstractVerticle {
                                 .put("msg", "新增成功")
                                 .put("data", reply.result().body()).encode());
             } else {
-                logger.error("add() 新增用户信息异常. err: ", reply.cause());
+                LOGGER.error("add() 新增用户信息异常. err: ", reply.cause());
                 context.fail(reply.cause());
             }
         });

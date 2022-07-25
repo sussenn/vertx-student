@@ -7,8 +7,6 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.MySQLConnectOptions;
@@ -17,6 +15,8 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.templates.SqlTemplate;
 import io.vertx.sqlclient.templates.TupleMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +28,7 @@ import java.util.List;
  * @Date 2022/7/22
  */
 public class DbVerticle extends AbstractVerticle {
-    private static final Logger logger = LoggerFactory.getLogger(DbVerticle.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DbVerticle.class);
 
     private MySQLPool pool;
 
@@ -54,7 +54,7 @@ public class DbVerticle extends AbstractVerticle {
                 // 响应结果的推送
                 startPromise.complete();
             } else {
-                logger.error("数据库监听HTTP服务消息异常. err: ", confJson.cause());
+                LOGGER.error("数据库监听HTTP服务消息异常. err: ", confJson.cause());
                 startPromise.fail(confJson.cause());
             }
         });
@@ -150,7 +150,7 @@ public class DbVerticle extends AbstractVerticle {
         confRet.getConfig(ar -> {
             // 若读取失败
             if (ar.failed()) {
-                logger.error("json配置文件读取失败. err:", ar.cause());
+                LOGGER.error("json配置文件读取失败. err:", ar.cause());
                 promise.fail(ar.cause());
             } else {
                 JsonObject jsonConf = ar.result();

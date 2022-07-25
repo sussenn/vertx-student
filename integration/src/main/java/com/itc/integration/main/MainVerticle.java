@@ -6,8 +6,8 @@ import com.itc.integration.web.HttpVerticle;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Promise;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @ClassName MainVerticle
@@ -16,7 +16,7 @@ import io.vertx.core.impl.logging.LoggerFactory;
  * @Date 2022/7/22
  */
 public class MainVerticle extends AbstractVerticle {
-    private static final Logger logger = LoggerFactory.getLogger(MainVerticle.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MainVerticle.class);
 
     public static void main(String[] args) {
         Runner.runExample(MainVerticle.class);
@@ -38,7 +38,7 @@ public class MainVerticle extends AbstractVerticle {
                 // 响应结果的异步获取
                 startPromise.complete();
             } else {
-                logger.error("数据库实例异常. err:", ar.cause());
+                LOGGER.error("数据库实例异常. err:", ar.cause());
                 startPromise.fail(ar.cause());
             }
         });
